@@ -1,75 +1,100 @@
 package logica;
 
-import datos.ModeloArmas;
-import datos.ModeloCRUD;
+import datos.Modelo;
+import org.bson.types.ObjectId;
 import pojos.Arma;
+import pojos.Personaje;
 import ui.ArmasUI;
-import ui.BarraBusqueda;
-import ui.BotonesCRUD;
 
-import javax.swing.*;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ControladorArmas extends ControladorCRUD<Arma> {
 
-    public ModeloArmas modelo;
+    private Modelo modelo;
     public ArmasUI vista;
-    private final ControladorPersonajes controladorPersonajes;
+    private Controlador controlador;
 
-    public ControladorArmas(ModeloArmas modelo, ArmasUI vista, ControladorPersonajes controladorPersonajes) {
-        super(modelo);
+    public ControladorArmas(Modelo modelo, ArmasUI vista, Controlador controlador) {
+        super(modelo.modeloArmas, vista);
         this.modelo = modelo;
         this.vista = vista;
-        this.controladorPersonajes = controladorPersonajes;
+        this.controlador = controlador;
     }
 
     @Override
-    public BotonesCRUD getBotonesCRUD() {
-        return vista.botones;
+    public Arma nuevoDatoVacio() {
+        return new Arma();
+    }
+
+
+    @Override
+    public void cargarDatos() {
+        vista.nombreTextField.setText(datoPantalla.getNombre());
+        vista.ataqueTextField.setText(String.valueOf(datoPantalla.getAtaque()));
+        vista.rarezaComboBox.setSelectedItem(datoPantalla.getRareza());
+        vista.personajesMultiCombo.setListItems(modelo.modeloPersonajes.buscarPorIds(datoPantalla.getPersonajes()));
+    }
+
+    public void cambioEnPersonajes(List<Personaje> personajes) {
+        vista.personajesMultiCombo.setComboOptions(personajes);
+        cargarLista(modeloCRUD.cogerTodo());
     }
 
     @Override
-    public BarraBusqueda getBarraBusqueda() {
-        return vista.barraBusqueda;
+    public void datosCambiados() {
+        controlador.controladorPersonajes.cambioEnArmas(modeloCRUD.cogerTodo());
     }
 
     @Override
-    public JList<Arma> getLista() {
-        return vista.listaArmas;
-    }
-
-    @Override
-    public Arma extraerDatos() {
+    public Arma extraerDatos(ObjectId id) {
         Arma arma = new Arma();
-        arma.setNombre(vista.nombreTextField.getText());
-        arma.setAtaque(Integer.parseInt(vista.ataqueTextField.getText()));
-        arma.setRareza(Integer.parseInt(vista.rarezaTextField.getText()));
-        arma.setDurabilidad(Integer.parseInt(vista.durabilidadTextField.getText()));
+        arma.setId(id);
+
+        String textoNombre = vista.nombreTextField.getText();
+        String textoAtaque = vista.ataqueTextField.getText();
+
+        arma.setNombre(!textoNombre.isEmpty() ? textoNombre : "Sin nombre");
+        arma.setAtaque(!textoAtaque.isEmpty() ? Integer.parseInt(textoAtaque) : 0);
+        arma.setRareza((Arma.Rareza) vista.rarezaComboBox.getSelectedItem());
+
+        propagarCambioPersonaje(arma);
+
         return arma;
     }
 
-    @Override
-    public void cargarDatos(Arma dato) {
-        vista.nombreTextField.setText(dato.getNombre());
-        vista.ataqueTextField.setText(String.valueOf(dato.getAtaque()));
-        vista.rarezaTextField.setText(String.valueOf(dato.getRareza()));
-        vista.durabilidadTextField.setText(String.valueOf(dato.getDurabilidad()));
-    }
+    private void propagarCambioPersonaje(Arma arma) {
+        // Personajes asociados a este arma anteriormente y personajes que nos devuelve la vista
+        List<Personaje> antiguos = modelo.modeloPersonajes.buscarPorIds(datoPantalla.getPersonajes());
+        List<Personaje> nuevos = vista.personajesMultiCombo.getListItems();
 
-    @Override
-    protected void datosCambiados(ArrayList<Arma> listaDatos) {
-        /*
-        Cuando cambia la lista de armas, hay que actualizar
-        el multiCombo en personajes
-         */
-        controladorPersonajes.cargarMultiComboArmas(listaDatos);
+        // Guardar los personajes que no estaban antes y propagar el cambio
+        List<Personaje> paraGuardar = new ArrayList<>(nuevos);
+        paraGuardar.removeAll(antiguos);
+        for (Personaje personaje : paraGuardar) {
+            personaje.getArmas().add(arma.getId());
+            modelo.modeloPersonajes.modificar(personaje);
+            datoPantalla.getPersonajes().add(personaje.getId());
+        }
+
+        // Borrar los personajes que ya no estan y propagar el cambio
+        List<Personaje> paraBorrar = new ArrayList<>(antiguos);
+        paraBorrar.removeAll(nuevos);
+        for (Personaje personaje : paraBorrar) {
+            personaje.getArmas().remove(arma.getId());
+            modelo.modeloPersonajes.modificar(personaje);
+            datoPantalla.getPersonajes().remove(personaje.getId());
+        }
+
+        // Asignar la nueva lista de personajes al arma
+        arma.setPersonajes(datoPantalla.getPersonajes());
     }
 
     @Override
     public void limpiarPantalla() {
         vista.nombreTextField.setText("");
-        vista.ataqueTextField.setText("");
-        vista.rarezaTextField.setText("");
-        vista.durabilidadTextField.setText("");
+        vista.ataqueTextField.setText("0");
+        vista.rarezaComboBox.setSelectedIndex(0);
+        vista.personajesMultiCombo.setListItems(new ArrayList<>());
     }
 }

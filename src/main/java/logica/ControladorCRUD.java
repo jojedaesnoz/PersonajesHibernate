@@ -2,51 +2,43 @@ package logica;
 
 
 import datos.ModeloCRUD;
+import org.bson.types.ObjectId;
+import pojos.Pojo;
 import ui.BarraBusqueda;
 import ui.BotonesCRUD;
+import ui.VistaCRUD;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.util.ArrayList;
 import java.util.List;
 
-import static logica.ControladorCRUD.Origen.*;
+import static logica.ControladorCRUD.Origen.MODIFICAR;
 import static ui.BotonesCRUD.Accion;
 
-public abstract class ControladorCRUD<T> implements ActionListener, MouseListener, ui.BarraBusqueda.ListenerBusqueda {
+public abstract class ControladorCRUD<T extends Pojo> implements ActionListener, MouseListener, BarraBusqueda.ListenerBusqueda {
 
     public enum Origen {
         NUEVO, MODIFICAR
     }
 
-    Origen origen;
-    BotonesCRUD.Accion accion;
-    public ui.BotonesCRUD botonesCRUD;
+    public Origen origen;
+    public Accion accion;
+    public BotonesCRUD botonesCRUD;
     public JList<T> jList;
     public DefaultListModel<T> modeloLista;
-    public ui.BarraBusqueda barraBusqueda;
+    public BarraBusqueda barraBusqueda;
     public ModeloCRUD<T> modeloCRUD;
-    public ArrayList<T> listaDatos;
-    public T dato;
+    public VistaCRUD<T> vistaCRUD;
+    public T datoPantalla;
 
-    public ControladorCRUD(ModeloCRUD modeloCRUD) {
+    public ControladorCRUD(ModeloCRUD<T> modeloCRUD, VistaCRUD<T> vistaCRUD) {
         this.modeloCRUD = modeloCRUD;
-        this.botonesCRUD = getBotonesCRUD();
-        this.jList = getLista();
+        this.vistaCRUD = vistaCRUD;
 
-        // Inicializar el modelo de la lista
-        if (jList.getModel() != null) {
-            modeloLista = (DefaultListModel<T>) jList.getModel();
-        } else {
-            modeloLista = new DefaultListModel<>();
-            jList.setModel(modeloLista);
-        }
-        this.barraBusqueda =getBarraBusqueda();
-
-        listaDatos = new ArrayList<>();
+        inicializar();
         ponerListeners();
     }
 
@@ -56,72 +48,144 @@ public abstract class ControladorCRUD<T> implements ActionListener, MouseListene
         barraBusqueda.setListenerBusqueda(this);
     }
 
+    public void inicializar() {
+        botonesCRUD = vistaCRUD.getBotones();
+        barraBusqueda = vistaCRUD.getBarraBusqueda();
+        jList = vistaCRUD.getLista();
+        modeloLista = new DefaultListModel<>();
+        jList.setModel(modeloLista);
+        datoPantalla = nuevoDatoVacio();
+
+        cargarLista(modeloCRUD.cogerTodo());
+        itemSeleccionado(false);
+        setModoEdicion(false);
+    }
+
+    /* Estos metodos se utilizan para comunicar a la clase hija de los eventos
+     que ocurren. Se les ha dado una implementacion por defecto. */
+
+    public boolean clickEnGuardar() {
+        return origen.equals(MODIFICAR) ?
+                modeloCRUD.modificar(extraerDatos(datoPantalla.getId())) :
+                modeloCRUD.guardar(extraerDatos(null));
+    }
+
+    public boolean clickEnCancelar() {
+        return true;
+    }
+
+    public boolean clickEnNuevo(){
+        return true;
+    }
+
+    public boolean clickEnModificar() {
+        return true;
+    }
+
+    public boolean clickEnEliminar() {
+        return modeloCRUD.eliminar(datoPantalla) != null;
+    }
+
+    public boolean clickEnEliminarTodo() {
+        return modeloCRUD.eliminarTodo();
+    }
+
+    public T clickEnDeshacer() {
+        return modeloCRUD.deshacer();
+    }
+
+    // METODOS PARA INTERACTUAR CON LA INTERFAZ DE USUARIO
+    // Cargar datos en la pantalla
+    public abstract void cargarDatos();
+
+    // Vaciar la pantalla de informacion
+    public abstract void limpiarPantalla();
+
+    // Convertir la informacion de la pantalla en un objeto
+    public abstract T extraerDatos(ObjectId id);
+
+    // Metodo para notificar de los cambios realizados a entidades relacionadas
+    public abstract void datosCambiados();
+
+
+    // Otros metodos utiles para la subclase
+    public abstract T nuevoDatoVacio();
+
+
+    // CLICK EN BOTONES
     @Override
     public void actionPerformed(ActionEvent e) {
-        switch (BotonesCRUD.Accion.valueOf(e.getActionCommand())) {
+        switch (Accion.valueOf(e.getActionCommand())) {
             case NUEVO:
-                setModoEdicion(true);
-                limpiarPantalla();
-                origen = Origen.NUEVO;
-                accion = Accion.NUEVO;
+                if (clickEnNuevo()) {
+                    datoPantalla = nuevoDatoVacio();
+                    setModoEdicion(true);
+                    limpiarPantalla();
+                    origen = Origen.NUEVO;
+                    accion = Accion.NUEVO;
+                }
                 break;
             case GUARDAR:
-                setModoEdicion(false);
-                extraerDatos();
-                if (origen.equals(MODIFICAR)) {
-                    modeloCRUD.modificar(dato);
-                } else {
-                    modeloCRUD.guardar(dato);
+                if (clickEnGuardar()) {
+                    setModoEdicion(false);
+                    accion = Accion.GUARDAR;
                 }
-                accion = Accion.GUARDAR;
                 break;
             case MODIFICAR:
-                setModoEdicion(true);
-                origen = MODIFICAR;
-                accion = Accion.MODIFICAR;
+                if (clickEnModificar()) {
+                    setModoEdicion(true);
+                    origen = MODIFICAR;
+                    accion = Accion.MODIFICAR;
+                }
                 break;
             case CANCELAR:
-                setModoEdicion(false);
-                itemSeleccionado(false);
-                accion = Accion.CANCELAR;
+                if (clickEnCancelar()) {
+                    datoPantalla = nuevoDatoVacio();
+                    setModoEdicion(false);
+                    itemSeleccionado(false);
+                    accion = Accion.CANCELAR;
+                    limpiarPantalla();
+                }
                 break;
             case ELIMINAR:
-                setModoEdicion(false);
-                botonesCRUD.deshacerButton.setEnabled(true);
-                modeloCRUD.eliminar(dato);
-                accion = Accion.ELIMINAR;
+                if (clickEnEliminar()) {
+                    setModoEdicion(false);
+                    botonesCRUD.deshacerButton.setEnabled(true);
+                    accion = Accion.ELIMINAR;
+                    limpiarPantalla();
+                }
                 break;
             case DESHACER:
-                setModoEdicion(false);
-                botonesCRUD.deshacerButton.setEnabled(false);
-                modeloCRUD.deshacer();
-                accion = Accion.DESHACER;
+                T dato;
+                if ((dato = clickEnDeshacer()) != null) {
+                    setModoEdicion(false);
+                    botonesCRUD.deshacerButton.setEnabled(false);
+                    accion = Accion.DESHACER;
+                    datoPantalla = dato;
+                    cargarDatos();
+                }
                 break;
             case ELIMINAR_TODO:
-                setModoEdicion(false);
-                modeloCRUD.eliminarTodo();
-                accion = Accion.ELIMINAR_TODO;
+                if (clickEnEliminarTodo()) {
+                    setModoEdicion(false);
+                    accion = Accion.ELIMINAR_TODO;
+                    limpiarPantalla();
+                }
                 break;
         }
 
-        listaDatos = (ArrayList<T>) modeloCRUD.cogerTodo();
-        barraBusqueda.getTfBusqueda().setText("");
+        cargarLista(modeloCRUD.cogerTodo());
+        datosCambiados();
     }
 
-    public void refrescarLista(List<T> lista) {
+    public void cargarLista(List<T> lista) {
         modeloLista.clear();
         lista.forEach(modeloLista::addElement);
-        listaDatos.clear();
-        listaDatos.addAll(lista);
-        datosCambiados(listaDatos);
     }
-
-    protected abstract void datosCambiados(ArrayList<T> listaDatos);
-
 
     @Override
     public void buscar(String cadena) {
-        refrescarLista(modeloCRUD.coger(cadena));
+        cargarLista(modeloCRUD.buscarPorNombre(cadena));
     }
 
     public void setModoEdicion(boolean modo) {
@@ -132,57 +196,28 @@ public abstract class ControladorCRUD<T> implements ActionListener, MouseListene
     public void itemSeleccionado(boolean seleccionado) {
         botonesCRUD.modificarButton.setEnabled(seleccionado);
         botonesCRUD.cancelarButton.setEnabled(seleccionado);
-        botonesCRUD.eliminarTodoButton.setEnabled(seleccionado);
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         // Click en la lista
         if (e.getComponent().equals(jList)) {
-            botonesCRUD.modificarButton.setEnabled(true);
-            botonesCRUD.cancelarButton.setEnabled(true);
-            botonesCRUD.eliminarTodoButton.setEnabled(true);
-            cargarDatos(dato = jList.getSelectedValue());
+            datoPantalla = jList.getSelectedValue();
+            cargarDatos();
+            itemSeleccionado(true);
         }
     }
 
-    // METODOS ABSTRACTOS
-    /**
-     * Metodo para limpiar la pantalla (vaciar cajas de texto etc)
-     */
-    abstract void limpiarPantalla();
-
-    /**
-     * Metodo para formar un objeto a partir de los datos introducidos por pantalla
-     * @return
-     */
-    abstract T extraerDatos();
-
-    /**
-     * Metodo para cargar en pantalla los datos del objeto seleccionado
-     * @param pojo
-     */
-    abstract void cargarDatos(T pojo);
-    abstract BotonesCRUD getBotonesCRUD();
-    abstract BarraBusqueda getBarraBusqueda();
-    abstract JList<T> getLista();
-
-
     // LISTENERS VACIOS
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void mousePressed(MouseEvent e) {}
 
-    }
     @Override
-    public void mouseReleased(MouseEvent e) {
+    public void mouseReleased(MouseEvent e) {}
 
-    }
     @Override
-    public void mouseEntered(MouseEvent e) {
+    public void mouseEntered(MouseEvent e) {}
 
-    }
     @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
+    public void mouseExited(MouseEvent e) {}
 }

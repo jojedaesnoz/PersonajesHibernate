@@ -1,45 +1,30 @@
 package pojos;
 
-import javax.persistence.*;
+import org.bson.types.ObjectId;
 
-import static javax.persistence.GenerationType.IDENTITY;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Arma extends Pojo implements Comparable<Arma> {
 
 
-@Entity
-@Table(name = "armas")
-public class Arma {
-
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private long id;
-
-    @Column(name = "nombre")
+    public enum Rareza {
+        COMUN, EXCEPCIONAL, EPICA, LEGENDARIA;
+    }
     private String nombre;
-
-    @Column(name = "ataque")
     private int ataque;
+    private Rareza rareza;
+    private List<ObjectId> personajes;
 
-    @Column(name = "rareza")
-    private int rareza;
-
-    @Column(name = "durabilidad")
-    private int durabilidad;
+    {
+        personajes = new ArrayList<>();
+    }
 
     public Arma() {
     }
-
-    public Arma(long id, String nombre, int ataque) {
-        this.id = id;
+    
+    public Arma(String nombre) {
         this.nombre = nombre;
-        this.ataque = ataque;
-    }
-
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 
     public String getNombre() {
@@ -58,19 +43,39 @@ public class Arma {
         this.ataque = ataque;
     }
 
-    public int getRareza() {
+    public Rareza getRareza() {
         return rareza;
     }
 
-    public void setRareza(int rareza) {
+    public void setRareza(Rareza rareza) {
         this.rareza = rareza;
     }
 
-    public int getDurabilidad() {
-        return durabilidad;
+    public List<ObjectId> getPersonajes() {
+        return personajes;
     }
 
-    public void setDurabilidad(int durabilidad) {
-        this.durabilidad = durabilidad;
+    public void setPersonajes(List<ObjectId> personajes) {
+        this.personajes = personajes;
+    }
+
+    @Override
+    public String toString() {
+        return nombre;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null)
+            return false;
+        if (!(obj instanceof Arma))
+            return false;
+        return ((Arma) obj).getId().equals(this.id);
+    }
+
+    @Override
+    public int compareTo(Arma o) {
+        return this.nombre.compareTo(o.nombre);
     }
 }

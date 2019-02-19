@@ -1,82 +1,92 @@
 package logica;
 
-import datos.ModeloCRUD;
-import datos.ModeloMovimientos;
+import datos.Modelo;
+import org.bson.types.ObjectId;
 import pojos.Movimiento;
 import pojos.Personaje;
-import ui.BarraBusqueda;
-import ui.BotonesCRUD;
 import ui.MovimientosUI;
 
-import javax.swing.*;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
 
-    public ModeloMovimientos modelo;
+    private Modelo modelo;
     public final MovimientosUI vista;
-    public ControladorPersonajes controladorPersonajes;
+    public Controlador controlador;
 
-    public ControladorMovimientos(ModeloMovimientos modelo, MovimientosUI vista, ControladorPersonajes controladorPersonajes) {
-        super(modelo);
+    public ControladorMovimientos(Modelo modelo, MovimientosUI vista, Controlador controlador) {
+        super(modelo.modeloMovimientos, vista);
         this.modelo = modelo;
         this.vista = vista;
-        this.controladorPersonajes = controladorPersonajes;
+        this.controlador = controlador;
     }
 
-    public void cargarComboPersonajes(List<Personaje> personajes) {
+    public void cambioEnPersonajes(List<Personaje> personajes) {
+        // Cargar combobox
         vista.personajeComboBox.removeAllItems();
         personajes.forEach(vista.personajeComboBox::addItem);
+
+        // Refrescar la lista
+        cargarLista(modeloCRUD.cogerTodo());
     }
 
     @Override
-    protected void datosCambiados(ArrayList<Movimiento> listaDatos) {
-        /*
-        Cuando cambie la lista de movimientos especiales, deberemos
-        actualizar las opciones del combobox en personajes
-         */
-        controladorPersonajes.cargarComboMovimientos(listaDatos);
+    public void cargarDatos() {
+        vista.nombreTextField.setText(datoPantalla.getNombre());
+        vista.energiaTextField.setText(String.valueOf(datoPantalla.getEnergia()));
+        vista.personajeComboBox.setSelectedItem(modelo.buscarPersonajePorIdMovimiento(datoPantalla.getId()));
+        vista.nivelTextField.setText(String.valueOf(datoPantalla.getNivel()));
     }
 
     @Override
-    public BotonesCRUD getBotonesCRUD() {
-        return vista.botones;
-    }
-
-    @Override
-    public BarraBusqueda getBarraBusqueda() {
-        return vista.barraBusqueda;
-    }
-
-    @Override
-    public JList<Movimiento> getLista() {
-        return vista.listaMovimientos;
-    }
-
-    @Override
-    public Movimiento extraerDatos() {
+    public Movimiento extraerDatos(ObjectId id) {
         Movimiento movimiento = new Movimiento();
-        movimiento.setNombre(vista.nombreTextField.getText());
-        movimiento.setEnergia(Integer.parseInt(vista.energiaTextField.getText()));
-        movimiento.setPersonaje((Personaje) vista.personajeComboBox.getSelectedItem());
-        movimiento.setNivel(Integer.parseInt(vista.nivelTextField.getText()));
+        movimiento.setId(id);
+
+        String textoNombre = vista.nombreTextField.getText();
+        String textoEnergia = vista.energiaTextField.getText();
+        String textoNivel = vista.nivelTextField.getText();
+
+        movimiento.setNombre(!textoNombre.isEmpty() ? textoNombre : "Sin nombre");
+        movimiento.setEnergia(!textoEnergia.isEmpty() ? Integer.parseInt(textoEnergia) : 0);
+        movimiento.setNivel(!textoNivel.isEmpty() ? Integer.parseInt(textoNivel) : 0);
+
+        propagarCambioPersonaje(movimiento);
+
         return movimiento;
     }
 
-    @Override
-    public void cargarDatos(Movimiento dato) {
-        vista.nombreTextField.setText(dato.getNombre());
-        vista.energiaTextField.setText(String.valueOf(dato.getEnergia()));
-        vista.personajeComboBox.setSelectedItem(dato.getPersonaje());
-        vista.nivelTextField.setText(String.valueOf(dato.getNivel()));
+    private void propagarCambioPersonaje(Movimiento movimiento) {
+        Personaje personaje = (Personaje) vista.personajeComboBox.getSelectedItem();
+        if (personaje != null) {
+            /* Si el movimiento anteriormente pertenecia a otro personaje,
+             deja de hacerlo y es asignado al nuevo personaje */
+            Personaje antiguo = modelo.buscarPersonajePorIdMovimiento(movimiento.getId());
+            if (antiguo != null && !antiguo.equals(personaje)) {
+                antiguo.setMovimiento(null);
+                modelo.modeloPersonajes.modificar(antiguo);
+            }
+            personaje.setMovimiento(movimiento);
+            modelo.modeloPersonajes.modificar(personaje);
+        }
     }
 
     @Override
     public void limpiarPantalla() {
         vista.nombreTextField.setText("");
-        vista.energiaTextField.setText("");
-        vista.personajeComboBox.setSelectedItem("");
-        vista.nivelTextField.setText("");
+        vista.energiaTextField.setText("0");
+        vista.personajeComboBox.setSelectedItem(null);
+        vista.nivelTextField.setText("0");
     }
+
+    @Override
+    public void datosCambiados() {
+        controlador.controladorPersonajes.cambioEnMovimientos(modeloCRUD.cogerTodo());
+    }
+
+    @Override
+    public Movimiento nuevoDatoVacio() {
+        return new Movimiento();
+    }
+
 }
