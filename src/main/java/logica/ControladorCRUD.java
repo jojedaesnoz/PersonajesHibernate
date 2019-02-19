@@ -2,6 +2,7 @@ package logica;
 
 
 import datos.ModeloCRUD;
+import pojos.Pojo;
 import ui.BarraBusqueda;
 import ui.BotonesCRUD;
 import ui.VistaCRUD;
@@ -63,9 +64,7 @@ public abstract class ControladorCRUD<T> implements ActionListener, MouseListene
      que ocurren. Se les ha dado una implementacion por defecto. */
 
     public boolean clickEnGuardar() {
-        return origen.equals(MODIFICAR) ?
-                modeloCRUD.modificar(extraerDatos(datoPantalla.getId())) :
-                modeloCRUD.guardar(extraerDatos(null));
+        return modeloCRUD.guardar(extraerDatos(datoPantalla));
     }
 
     public boolean clickEnCancelar() {
@@ -100,15 +99,13 @@ public abstract class ControladorCRUD<T> implements ActionListener, MouseListene
     public abstract void limpiarPantalla();
 
     // Convertir la informacion de la pantalla en un objeto
-    public abstract T extraerDatos(ObjectId id);
+    public abstract T extraerDatos(T dato);
 
     // Metodo para notificar de los cambios realizados a entidades relacionadas
     public abstract void datosCambiados();
 
-
     // Otros metodos utiles para la subclase
     public abstract T nuevoDatoVacio();
-
 
     // CLICK EN BOTONES
     @Override
@@ -172,8 +169,9 @@ public abstract class ControladorCRUD<T> implements ActionListener, MouseListene
                 break;
         }
 
-        cargarLista(modeloCRUD.cogerTodo());
+        //TODO: seguramente se pueda quitar cargarLista de las subclases
         datosCambiados();
+        cargarLista(modeloCRUD.cogerTodo());
     }
 
     public void cargarLista(List<T> lista) {

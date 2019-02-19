@@ -5,6 +5,8 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Entity
+@Table(name = "armas")
 public class Arma implements Comparable<Arma> {
 
     @Id
@@ -22,6 +24,7 @@ public class Arma implements Comparable<Arma> {
         COMUN, EXCEPCIONAL, EPICA, LEGENDARIA;
     }
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "rareza")
     private Rareza rareza;
 

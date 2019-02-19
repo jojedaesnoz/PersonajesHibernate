@@ -10,9 +10,12 @@ import java.util.List;
 
 public class ModeloCRUD<T> {
     T ultimoBorrado;
+    private Class<T> clase;
 
-    public ModeloCRUD() {
+    public ModeloCRUD(Class<T> clase) {
+        this.clase = clase;
         conectar();
+
     }
 
     public void conectar() {
@@ -36,19 +39,19 @@ public class ModeloCRUD<T> {
     // READ
     public List<T> cogerTodo() {
         Session session = HibernateUtil.getCurrentSession();
-        Query query = session.createQuery("FROM Arma");
-        ArrayList<Arma> armas = (ArrayList<Arma>) query.list() ;
+        Query query = session.createQuery("FROM " + clase.getSimpleName());
+        ArrayList<T> datos = (ArrayList<T>) query.list() ;
         session.close();
-        return (List<T>) armas;
+        return datos;
     }
     
-    public List<T> coger(String busqueda) {
+    public List<T> buscarPorNombre(String busqueda) {
         Session session = HibernateUtil.getCurrentSession();
-        Query query = session.createQuery("FROM Arma a WHERE a.nombre LIKE '%:busqueda%'");
+        Query query = session.createQuery("FROM " + clase.getSimpleName() + " a WHERE a.nombre LIKE '%:busqueda%'");
         query.setParameter("busqueda", busqueda);
-        ArrayList<Arma> armas = (ArrayList<Arma>) query.list();
+        ArrayList<T> datos = (ArrayList<T>) query.list();
         session.close();
-        return (List<T>) armas;
+        return datos;
     }
 
     // UPDATE
@@ -71,7 +74,7 @@ public class ModeloCRUD<T> {
     public boolean eliminarTodo() {
         Session session = HibernateUtil.getCurrentSession();
         session.beginTransaction();
-        session.createQuery("DELETE FROM Arma").executeUpdate();
+        session.createQuery("DELETE FROM " + clase.getSimpleName()).executeUpdate();
         session.getTransaction().commit();
         session.close();
         return true;

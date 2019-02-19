@@ -38,10 +38,7 @@ public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
     }
 
     @Override
-    public Movimiento extraerDatos(ObjectId id) {
-        Movimiento movimiento = new Movimiento();
-        movimiento.setId(id);
-
+    public Movimiento extraerDatos(Movimiento movimiento) {
         String textoNombre = vista.nombreTextField.getText();
         String textoEnergia = vista.energiaTextField.getText();
         String textoNivel = vista.nivelTextField.getText();
@@ -50,24 +47,22 @@ public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
         movimiento.setEnergia(!textoEnergia.isEmpty() ? Integer.parseInt(textoEnergia) : 0);
         movimiento.setNivel(!textoNivel.isEmpty() ? Integer.parseInt(textoNivel) : 0);
 
-        propagarCambioPersonaje(movimiento);
-
         return movimiento;
     }
 
     private void propagarCambioPersonaje(Movimiento movimiento) {
-        Personaje personaje = (Personaje) vista.personajeComboBox.getSelectedItem();
-        if (personaje != null) {
-            /* Si el movimiento anteriormente pertenecia a otro personaje,
-             deja de hacerlo y es asignado al nuevo personaje */
-            Personaje antiguo = modelo.buscarPersonajePorIdMovimiento(movimiento.getId());
-            if (antiguo != null && !antiguo.equals(personaje)) {
-                antiguo.setMovimientos(null);
-                modelo.modeloPersonajes.modificar(antiguo);
-            }
-            personaje.setMovimientos(movimiento);
-            modelo.modeloPersonajes.modificar(personaje);
-        }
+//        Personaje personaje = (Personaje) vista.personajeComboBox.getSelectedItem();
+//        if (personaje != null) {
+//            /* Si el movimiento anteriormente pertenecia a otro personaje,
+//             deja de hacerlo y es asignado al nuevo personaje */
+//            Personaje antiguo = modelo.buscarPersonajePorIdMovimiento(movimiento.getId());
+//            if (antiguo != null && !antiguo.equals(personaje)) {
+//                antiguo.setMovimientos(null);
+//                modelo.modeloPersonajes.modificar(antiguo);
+//            }
+//            personaje.setMovimientos(movimiento);
+//            modelo.modeloPersonajes.modificar(personaje);
+//        }
     }
 
     @Override

@@ -2,6 +2,8 @@ package pojos;
 
 import javax.persistence.*;
 
+@Entity
+@Table(name = "movimientos")
 public class Movimiento {
 
     @Id
