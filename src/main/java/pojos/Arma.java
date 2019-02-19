@@ -1,30 +1,44 @@
 package pojos;
 
-import org.bson.types.ObjectId;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Arma extends Pojo implements Comparable<Arma> {
+public class Arma implements Comparable<Arma> {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
+
+    @Column(name = "nombre")
+    private String nombre;
+
+    @Column(name = "ataque")
+    private int ataque;
 
     public enum Rareza {
         COMUN, EXCEPCIONAL, EPICA, LEGENDARIA;
     }
-    private String nombre;
-    private int ataque;
+
+    @Column(name = "rareza")
     private Rareza rareza;
-    private List<ObjectId> personajes;
+
+    @ManyToMany(cascade = CascadeType.DETACH, mappedBy = "armas")
+    private List<Personaje> personajes;
 
     {
         personajes = new ArrayList<>();
     }
 
-    public Arma() {
+
+    public long getId() {
+        return id;
     }
-    
-    public Arma(String nombre) {
-        this.nombre = nombre;
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -51,11 +65,11 @@ public class Arma extends Pojo implements Comparable<Arma> {
         this.rareza = rareza;
     }
 
-    public List<ObjectId> getPersonajes() {
+    public List<Personaje> getPersonajes() {
         return personajes;
     }
 
-    public void setPersonajes(List<ObjectId> personajes) {
+    public void setPersonajes(List<Personaje> personajes) {
         this.personajes = personajes;
     }
 
@@ -71,7 +85,7 @@ public class Arma extends Pojo implements Comparable<Arma> {
             return false;
         if (!(obj instanceof Arma))
             return false;
-        return ((Arma) obj).getId().equals(this.id);
+        return ((Arma) obj).getId() == this.id;
     }
 
     @Override

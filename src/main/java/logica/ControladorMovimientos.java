@@ -1,7 +1,6 @@
 package logica;
 
 import datos.Modelo;
-import org.bson.types.ObjectId;
 import pojos.Movimiento;
 import pojos.Personaje;
 import ui.MovimientosUI;
@@ -63,10 +62,10 @@ public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
              deja de hacerlo y es asignado al nuevo personaje */
             Personaje antiguo = modelo.buscarPersonajePorIdMovimiento(movimiento.getId());
             if (antiguo != null && !antiguo.equals(personaje)) {
-                antiguo.setMovimiento(null);
+                antiguo.setMovimientos(null);
                 modelo.modeloPersonajes.modificar(antiguo);
             }
-            personaje.setMovimiento(movimiento);
+            personaje.setMovimientos(movimiento);
             modelo.modeloPersonajes.modificar(personaje);
         }
     }

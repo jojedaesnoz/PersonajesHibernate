@@ -1,15 +1,33 @@
 package pojos;
 
-public class Movimiento extends Pojo {
+import javax.persistence.*;
+
+public class Movimiento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
+
+    @Column(name = "nombre")
     private String nombre;
+
+    @Column(name = "energia")
     private int energia;
+
+    @Column(name = "nivel")
     private int nivel;
 
-    public Movimiento() {
+    @ManyToOne
+    @JoinColumn(name = "id_personaje")
+    private Personaje personaje;
+
+    public long getId() {
+        return id;
     }
-    
-    public Movimiento(String nombre) {
-        this.nombre = nombre;
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -36,6 +54,14 @@ public class Movimiento extends Pojo {
         this.nivel = nivel;
     }
 
+    public Personaje getPersonaje() {
+        return personaje;
+    }
+
+    public void setPersonaje(Personaje personaje) {
+        this.personaje = personaje;
+    }
+
     @Override
     public String toString() {
         return nombre;
@@ -48,6 +74,6 @@ public class Movimiento extends Pojo {
             return false;
         if (!(obj instanceof Movimiento))
             return false;
-        return ((Movimiento) obj).getId().equals(this.id);
+        return ((Movimiento) obj).getId() == this.id;
     }
 }

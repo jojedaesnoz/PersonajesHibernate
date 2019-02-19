@@ -1,26 +1,44 @@
 package pojos;
 
-import org.bson.types.ObjectId;
 
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Personaje extends Pojo implements Comparable<Personaje> {
+@Entity
+@Table(name = "personajes")
+public class Personaje implements Comparable<Personaje> {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private long id;
+
+    @Column(name = "nombre")
     private String nombre;
+
+    @Column(name = "vida")
     private int vida;
-    private Movimiento movimiento;
-    private List<ObjectId> armas;
+
+    @OneToMany(mappedBy = "personaje", cascade = CascadeType.DETACH)
+    private List<Movimiento> movimientos;
+
+    @ManyToMany(cascade = CascadeType.DETACH)
+    @JoinTable(name = "personaje_arma",
+            joinColumns = {@JoinColumn(name = "id_personaje")},
+            inverseJoinColumns = {@JoinColumn(name = "id_arma")})
+    private List<Arma> armas;
 
     {
         armas = new ArrayList<>();
     }
 
-
-    public Personaje() {
+    public long getId() {
+        return id;
     }
 
-    public Personaje(String nombre) {
-        this.nombre = nombre;
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -39,19 +57,19 @@ public class Personaje extends Pojo implements Comparable<Personaje> {
         this.vida = vida;
     }
 
-    public Movimiento getMovimiento() {
-        return movimiento;
+    public List<Movimiento> getMovimientos() {
+        return movimientos;
     }
 
-    public void setMovimiento(Movimiento movimiento) {
-        this.movimiento = movimiento;
+    public void setMovimientos(List<Movimiento> movimientos) {
+        this.movimientos = movimientos;
     }
 
-    public List<ObjectId> getArmas() {
+    public List<Arma> getArmas() {
         return armas;
     }
 
-    public void setArmas(List<ObjectId> armas) {
+    public void setArmas(List<Arma> armas) {
         this.armas = armas;
     }
 
@@ -66,7 +84,7 @@ public class Personaje extends Pojo implements Comparable<Personaje> {
             return false;
         if (!(obj instanceof Personaje))
             return false;
-        return ((Personaje) obj).getId().equals(this.id);
+        return ((Personaje) obj).getId() == this.id;
     }
 
     @Override

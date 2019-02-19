@@ -11,8 +11,12 @@ public class Modelo {
     public ModeloCRUD<Arma> modeloArmas;
 
     public Modelo() {
-        modeloArmas = new ModeloCRUD<>("armas", Arma.class);
-        modeloPersonajes = new ModeloCRUD<>("personajes", Personaje.class);
-        modeloMovimientos = new ModeloCRUD<>("movimientos", Movimiento.class);
+        modeloArmas = new ModeloCRUD<>();
+        modeloPersonajes = new ModeloCRUD<>();
+        modeloMovimientos = new ModeloCRUD<>();
+    }
+
+    public Object buscarPersonajePorIdMovimiento(long id) {
+        return null;
     }
 }

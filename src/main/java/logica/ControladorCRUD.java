@@ -2,8 +2,6 @@ package logica;
 
 
 import datos.ModeloCRUD;
-import org.bson.types.ObjectId;
-import pojos.Pojo;
 import ui.BarraBusqueda;
 import ui.BotonesCRUD;
 import ui.VistaCRUD;
@@ -18,7 +16,7 @@ import java.util.List;
 import static logica.ControladorCRUD.Origen.MODIFICAR;
 import static ui.BotonesCRUD.Accion;
 
-public abstract class ControladorCRUD<T extends Pojo> implements ActionListener, MouseListener, BarraBusqueda.ListenerBusqueda {
+public abstract class ControladorCRUD<T> implements ActionListener, MouseListener, BarraBusqueda.ListenerBusqueda {
 
     public enum Origen {
         NUEVO, MODIFICAR

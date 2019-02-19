@@ -40,7 +40,7 @@ public class ControladorPersonajes extends ControladorCRUD<Personaje> {
     @Override
     public void cargarDatos() {
         vista.nombreTextField.setText(datoPantalla.getNombre());
-        vista.movimientoComboBox.setSelectedItem(datoPantalla.getMovimiento());
+        vista.movimientoComboBox.setSelectedItem(datoPantalla.getMovimientos());
         vista.armasMultiCombo.setListItems(modelo.modeloArmas.buscarPorIds(datoPantalla.getArmas()));
         vista.vidaTextField.setText(String.valueOf(datoPantalla.getVida()));
     }
@@ -69,10 +69,10 @@ public class ControladorPersonajes extends ControladorCRUD<Personaje> {
         if (movimiento != null) {
             Personaje antiguo = modelo.buscarPersonajePorIdMovimiento(movimiento.getId());
             if (antiguo != null && !antiguo.equals(personaje)) {
-                antiguo.setMovimiento(null);
+                antiguo.setMovimientos(null);
                 modeloCRUD.modificar(antiguo);
             }
-            personaje.setMovimiento(movimiento);
+            personaje.setMovimientos(movimiento);
         }
     }
 

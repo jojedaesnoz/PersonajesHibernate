@@ -8,11 +8,19 @@ import util.HibernateUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ModeloHibernate<T> {
+public class ModeloCRUD<T> {
     T ultimoBorrado;
-    
-    public ModeloHibernate() {
-        
+
+    public ModeloCRUD() {
+        conectar();
+    }
+
+    public void conectar() {
+        HibernateUtil.buildSessionFactory();
+    }
+
+    public void desconectar() {
+        HibernateUtil.closeSessionFactory();
     }
 
     // CREATE
