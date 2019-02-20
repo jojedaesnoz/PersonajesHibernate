@@ -4,6 +4,8 @@ import pojos.Arma;
 import pojos.Movimiento;
 import pojos.Personaje;
 
+import java.util.List;
+
 public class Modelo {
 
     public ModeloCRUD<Movimiento> modeloMovimientos;
@@ -16,7 +18,7 @@ public class Modelo {
         modeloMovimientos = new ModeloCRUD<>(Movimiento.class);
     }
 
-    public Object buscarPersonajePorIdMovimiento(long id) {
-        return null;
+    public List<Movimiento> buscarMovimientosDePersonaje(Personaje personaje) {
+        return modeloPersonajes.buscarPorId(personaje.getId()).getMovimientos();
     }
 }

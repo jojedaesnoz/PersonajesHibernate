@@ -2,6 +2,7 @@ package pojos;
 
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ public class Personaje implements Comparable<Personaje> {
     @OneToMany(mappedBy = "personaje", cascade = CascadeType.DETACH)
     private List<Movimiento> movimientos;
 
-    @ManyToMany(cascade = CascadeType.DETACH)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.DETACH)
     @JoinTable(name = "personaje_arma",
             joinColumns = {@JoinColumn(name = "id_personaje")},
             inverseJoinColumns = {@JoinColumn(name = "id_arma")})

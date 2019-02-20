@@ -2,6 +2,7 @@ package pojos;
 
 
 import javax.persistence.*;
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class Arma implements Comparable<Arma> {
     @Column(name = "rareza")
     private Rareza rareza;
 
-    @ManyToMany(cascade = CascadeType.DETACH, mappedBy = "armas")
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "armas")
     private List<Personaje> personajes;
 
     {

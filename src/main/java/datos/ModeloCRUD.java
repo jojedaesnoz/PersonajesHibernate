@@ -54,6 +54,19 @@ public class ModeloCRUD<T> {
         return datos;
     }
 
+    public T buscarPorId(long id) {
+        Session session = HibernateUtil.getCurrentSession();
+        Query query = session.createQuery("FROM " + clase.getSimpleName() + " a where a.id = :id");
+        query.setParameter("id", id);
+        return (T) query.getSingleResult();
+    }
+
+    public List<T> buscarPorIds(long... ids) {
+//        Session session = HibernateUtil.getCurrentSession();
+//        Query query = session.createQuery("FROM " + clase.getSimpleName() + " a. WHERE a.id IN ");
+        return null;
+    }
+
     // UPDATE
     public boolean modificar(T dato) {
         guardar(dato);

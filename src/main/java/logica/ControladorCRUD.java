@@ -2,7 +2,6 @@ package logica;
 
 
 import datos.ModeloCRUD;
-import pojos.Pojo;
 import ui.BarraBusqueda;
 import ui.BotonesCRUD;
 import ui.VistaCRUD;

@@ -33,7 +33,7 @@ public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
     public void cargarDatos() {
         vista.nombreTextField.setText(datoPantalla.getNombre());
         vista.energiaTextField.setText(String.valueOf(datoPantalla.getEnergia()));
-        vista.personajeComboBox.setSelectedItem(modelo.buscarPersonajePorIdMovimiento(datoPantalla.getId()));
+        vista.personajeComboBox.setSelectedItem(datoPantalla.getPersonaje());
         vista.nivelTextField.setText(String.valueOf(datoPantalla.getNivel()));
     }
 
@@ -46,6 +46,7 @@ public class ControladorMovimientos extends ControladorCRUD<Movimiento> {
         movimiento.setNombre(!textoNombre.isEmpty() ? textoNombre : "Sin nombre");
         movimiento.setEnergia(!textoEnergia.isEmpty() ? Integer.parseInt(textoEnergia) : 0);
         movimiento.setNivel(!textoNivel.isEmpty() ? Integer.parseInt(textoNivel) : 0);
+        movimiento.setPersonaje((Personaje) vista.personajeComboBox.getSelectedItem());
 
         return movimiento;
     }

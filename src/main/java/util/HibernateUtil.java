@@ -8,7 +8,6 @@ import org.hibernate.service.ServiceRegistry;
 import pojos.Arma;
 import pojos.Movimiento;
 import pojos.Personaje;
-import pojos.Pojo;
 
 public class HibernateUtil {
 
@@ -22,7 +21,6 @@ public class HibernateUtil {
         Configuration configuration = new Configuration();
         configuration.configure();
         // Se registran las clases que hay que mapear con cada tabla de la base de datos
-        configuration.addAnnotatedClass(Pojo.class);
         configuration.addAnnotatedClass(Personaje.class);
         configuration.addAnnotatedClass(Arma.class);
         configuration.addAnnotatedClass(Movimiento.class);
